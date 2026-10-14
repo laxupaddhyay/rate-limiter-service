@@ -1,0 +1,10 @@
+.env
+.env.*
+!.env.example
+target/
+**/target/
+.m2/
+.idea/
+.vscode/
+*.iml
+*.log

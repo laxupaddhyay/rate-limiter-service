@@ -1,0 +1,64 @@
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  application:
+    name: rate-limiter-sample
+  data:
+    redis:
+      timeout: ${REDIS_COMMAND_TIMEOUT:2s}
+      connect-timeout: ${REDIS_CONNECT_TIMEOUT:2s}
+
+sample:
+  auth:
+    username: ${DEMO_USERNAME:demo}
+    password: ${DEMO_PASSWORD:change-me-before-use}
+    api-key: ${DEMO_API_KEY:sample-demo-key}
+
+rate-limiter:
+  enabled: true
+  api-key-header: ${RATE_LIMITER_API_KEY_HEADER:X-API-Key}
+  require-api-key-validation: true
+  api-key-max-length: 512
+  redis-key-prefix: ${RATE_LIMITER_REDIS_KEY_PREFIX:rate-limit}
+  paths:
+    include: ${RATE_LIMITER_PATHS_INCLUDE:/api/**}
+    exclude: ${RATE_LIMITER_PATHS_EXCLUDE:/actuator/health,/actuator/info}
+  user:
+    capacity: ${RATE_LIMITER_USER_CAPACITY:60}
+    refill-tokens: ${RATE_LIMITER_USER_REFILL_TOKENS:60}
+    refill-period: ${RATE_LIMITER_USER_REFILL_PERIOD:1m}
+  api-key:
+    capacity: ${RATE_LIMITER_API_KEY_CAPACITY:120}
+    refill-tokens: ${RATE_LIMITER_API_KEY_REFILL_TOKENS:120}
+    refill-period: ${RATE_LIMITER_API_KEY_REFILL_PERIOD:1m}
+  routes:
+    - path: /api/heavy/**
+      user:
+        capacity: 5
+        refill-tokens: 5
+        refill-period: 1m
+      api-key:
+        capacity: 10
+        refill-tokens: 10
+        refill-period: 1m
+  clients:
+    demo-client:
+      api-key:
+        capacity: 30
+        refill-tokens: 30
+        refill-period: 1m
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: never
+      probes:
+        enabled: true
+  health:
+    group:
+      readiness:
+        include: readinessState,redisRateLimiter
